@@ -15,13 +15,22 @@ navItems.forEach(item => {
   item.addEventListener('click', () => {
     navItems.forEach(i => i.classList.remove('active'));
     item.classList.add('active');
-    
-    if (item.dataset && item.dataset.nav === 'home') {
-      showGalleryView();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (item.dataset && item.dataset.nav === 'details') {
-      showDetailsView();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (item.dataset) {
+      const target = item.dataset.nav;
+
+      if (target === 'home') {
+        // Tetap di halaman utama dan tampilkan gallery view
+        showGalleryView();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (target === 'details') {
+        // Tetap di halaman utama dan tampilkan details view
+        showDetailsView();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (target === 'search') {
+        // Pindah ke halaman khusus pencarian
+        window.location.href = 'search.html';
+      }
     }
   });
 });
@@ -220,5 +229,18 @@ function showDetailsView() {
 
 // Only load gallery on pages that have #gallery
 if (document.getElementById('gallery')) {
-  loadPhotos();
+  // Cek query param untuk menentukan view awal (home / details)
+  const params = new URLSearchParams(window.location.search);
+  const initialView = params.get('view');
+
+  loadPhotos().then(() => {
+    if (initialView === 'details') {
+      const navDetails = document.querySelector('.top-nav .nav-item[data-nav="details"]');
+      const navHome = document.querySelector('.top-nav .nav-item[data-nav="home"]');
+      if (navHome) navHome.classList.remove('active');
+      if (navDetails) navDetails.classList.add('active');
+      showDetailsView();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
 }

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhotoHub - Search</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/main.css" />
+  <link rel="stylesheet" href="./css/search.css"/>
+</head>
+<body>
+  <div class="top-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <div class="brand">
+          <h2>PhotoHub</h2>
+          <small>Powered by Unsplash</small>
+        </div>
+      </div>
+      <div class="nav-right">
+        <div class="nav-item" data-nav="home">
+          <i class="bi bi-house-fill" aria-hidden="true"></i>
+          <span>Home</span>
+        </div>
+        <div class="nav-item active" data-nav="search">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <span>Search</span>
+        </div>
+        <div class="nav-item" data-nav="trending" title="Trending">
+          <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
+          <span>Trending</span>
+        </div>
+        <div class="nav-item" data-nav="details">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>Details</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="searchContainer">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Cari foto berdasarkan judul..." autocomplete="off" />
+      <button id="clearSearchBtn" class="clear-btn" title="Bersihkan pencarian">✕</button>
+    </div>
+    <div class="search-info" id="searchInfo">Menampilkan semua gambar</div>
+  </div>
+
+  <div class="content">
+    <p>Halaman khusus fitur pencarian. Ketik kata kunci untuk mengambil data foto dari Unsplash API.</p>
+
+    <div class="gallery-grid" id="gallerySearch"></div>
+  </div>
+
+  <script>
+    const accessKey = "AQkp7ZUAmpXfH6jXBZ8CbShV8_kmNXLSNL-FweguXzw";
+
+    const navItemsSearchPage = document.querySelectorAll('.top-nav .nav-item');
+    navItemsSearchPage.forEach((item) => {
+      item.addEventListener('click', () => {
+        const target = item.dataset && item.dataset.nav;
+        if (target === 'home') {
+          window.location.href = 'index.html';
+        } else if (target === 'search') {
+          window.location.href = 'search.html';
+        } else if (target === 'details') {
+          // Arahkan ke halaman utama dengan mode details view
+          window.location.href = 'index.html?view=details';
+        }
+      });
+    });
+
+    const searchBtn = document.querySelector('.top-nav .nav-item[data-nav="search"]');
+    const searchContainer = document.getElementById("searchContainer");
+    const searchInput = document.getElementById("searchInput");
+    const clearSearchBtn = document.getElementById("clearSearchBtn");
+    const searchInfo = document.getElementById("searchInfo");
+    const gallerySearch = document.getElementById("gallerySearch");
+
+    let debounceId = null;
+
+    // Toggle container ketika tombol Search di navbar diklik
+    searchBtn.addEventListener("click", () => {
+      const isHidden = searchContainer.style.display === "none";
+      searchContainer.style.display = isHidden ? "block" : "none";
+      if (isHidden) {
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+
+    // Clear input
+    clearSearchBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      gallerySearch.innerHTML = "";
+      showPlaceholder();
+      searchInput.focus();
+      searchInfo.textContent = "Menampilkan semua gambar";
+    });
+
+    function showPlaceholder() {
+      gallerySearch.innerHTML = '<div class="search-placeholder">Ketik kata kunci di atas untuk mencari foto dari Unsplash.</div>';
+    }
+
+    // Render hasil dari API ke dalam grid
+    function renderPhotos(photos, query) {
+      gallerySearch.innerHTML = "";
+
+      if (!photos || photos.length === 0) {
+        gallerySearch.innerHTML = '<div class="search-placeholder">Tidak ada hasil untuk: "' + query + '"</div>';
+        return;
+      }
+
+      photos.forEach((photo) => {
+        const titleText = photo.alt_description || photo.description || "Untitled Photo";
+
+        const item = document.createElement("div");
+        item.className = "photo-item";
+        item.setAttribute("data-title", titleText.toLowerCase());
+
+        const img = document.createElement("img");
+        img.src = photo.urls && photo.urls.small ? photo.urls.small : "";
+        img.alt = titleText;
+
+        const caption = document.createElement("div");
+        caption.className = "photo-item-title";
+        caption.textContent = titleText;
+
+        item.appendChild(img);
+        item.appendChild(caption);
+
+        // Bungkus dengan link ke halaman detail, sama seperti di halaman utama
+        const link = document.createElement("a");
+        link.href = `detail.html?id=${photo.id}`;
+        link.title = titleText;
+        link.appendChild(item);
+
+        gallerySearch.appendChild(link);
+      });
+    }
+
+    async function searchFromApi(query) {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        showPlaceholder();
+        searchInfo.textContent = "Menampilkan semua gambar";
+        return;
+      }
+
+      searchInfo.textContent = `Mencari foto untuk: "${trimmed}" ...`;
+
+      try {
+        const endpoint = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(trimmed)}&per_page=24`;
+        const res = await fetch(endpoint, {
+          headers: {
+            Authorization: `Client-ID ${accessKey}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Unsplash error " + res.status);
+        }
+
+        const data = await res.json();
+        const results = Array.isArray(data.results) ? data.results : [];
+
+        renderPhotos(results, trimmed);
+
+        if (results.length === 0) {
+          searchInfo.textContent = `Tidak ada hasil untuk: "${trimmed}"`;
+        } else {
+          searchInfo.textContent = `Ditemukan ${results.length} foto untuk: "${trimmed}" dari Unsplash API`;
+        }
+      } catch (err) {
+        console.error(err);
+        gallerySearch.innerHTML =
+          '<div class="search-placeholder">Gagal memuat data dari API. Coba lagi beberapa saat.</div>';
+        searchInfo.textContent = "Terjadi kesalahan saat memuat data dari Unsplash.";
+      }
+    }
+
+    // Pencarian real-time (debounce) ke API
+    searchInput.addEventListener("input", (e) => {
+      const value = e.target.value;
+
+      clearTimeout(debounceId);
+
+      if (!value.trim()) {
+        gallerySearch.innerHTML = "";
+        showPlaceholder();
+        searchInfo.textContent = "Menampilkan semua gambar";
+        return;
+      }
+
+      debounceId = setTimeout(() => {
+        searchFromApi(value);
+      }, 500);
+    });
+
+    // Placeholder awal
+    showPlaceholder();
+  </script>
+</body>
+</html>

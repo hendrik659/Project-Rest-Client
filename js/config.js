@@ -9,32 +9,56 @@ categories.forEach(btn => {
 // Store photos data globally
 let photosData = [];
 
-// Top nav click handling: toggle active class
 const navItems = document.querySelectorAll('.top-nav .nav-item');
+const currentPage = document.body?.dataset?.page || 'home';
+
 navItems.forEach(item => {
   item.addEventListener('click', () => {
-    navItems.forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
+    const target = item.dataset?.nav;
+    if (!target) return;
 
-    if (item.dataset) {
-      const target = item.dataset.nav;
+    if (currentPage === 'home' && (target === 'home' || target === 'details')) {
+      navItems.forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    }
 
-      if (target === 'home') {
-        // Tetap di halaman utama dan tampilkan gallery view
+    if (target === 'home') {
+      if (currentPage === 'home') {
         showGalleryView();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (target === 'details') {
-        // Tetap di halaman utama dan tampilkan details view
+      } else {
+        window.location.href = 'index.html';
+      }
+      return;
+    }
+
+    if (target === 'details') {
+      if (currentPage === 'home') {
         showDetailsView();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (target === 'search') {
-        // Pindah ke halaman khusus pencarian
-        window.location.href = 'search.html';
+      } else {
+        window.location.href = 'index.html?view=details';
+      }
+      return;
+    }
+
+    if (target === 'search') {
+      window.location.href = 'search.html';
+      return;
+    }
+
+    if (target === 'trending') {
+      if (currentPage !== 'trending') {
+        window.location.href = 'trending.html';
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   });
 });
+
 const accessKey = "AQkp7ZUAmpXfH6jXBZ8CbShV8_kmNXLSNL-FweguXzw";
+window.UNSPLASH_ACCESS_KEY = accessKey;
 
 async function loadPhotos() {
   if (!accessKey) {

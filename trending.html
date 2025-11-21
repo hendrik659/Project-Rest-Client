@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PhotoHub</title>
+  <title>PhotoHub - Trending</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="stylesheet" href="./css/main.css" />
+  <link rel="stylesheet" href="./css/trending.css" />
 </head>
-<body data-page="home">
+<body data-page="trending">
   <div class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <div class="nav-left">
@@ -18,7 +19,7 @@
         </div>
       </div>
       <div class="nav-right">
-        <div class="nav-item active" data-nav="home">
+        <div class="nav-item" data-nav="home">
           <i class="bi bi-house-fill" aria-hidden="true"></i>
           <span>Home</span>
         </div>
@@ -26,7 +27,7 @@
           <i class="bi bi-search" aria-hidden="true"></i>
           <span>Search</span>
         </div>
-        <div class="nav-item" data-nav="trending">
+        <div class="nav-item active" data-nav="trending">
           <i class="bi bi-graph-up-arrow" aria-hidden="true"></i>
           <span>Trending</span>
         </div>
@@ -38,14 +39,25 @@
     </div>
   </div>
 
-  <div class="container py-4">
+  <main class="container py-4 trending-page" aria-live="polite">
+    <header class="trending-header">
+      <h1>Trending Photos</h1>
+      <p>
+        Koleksi foto populer terbaru dari Unsplash. Klik salah satu foto untuk melihat detail lengkapnya.
+      </p>
+    </header>
 
-    <!-- header moved into navbar -->
-    <div class="gallery-grid mb-5" id="gallery"></div>
+    <div id="trendingStatus" class="trending-status">
+      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+      <span class="status-text">Memuat foto trending dari Unsplash...</span>
+    </div>
 
-  </div>
+    <section id="trendingGallery" class="trending-grid" aria-label="Trending photos grid"></section>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="./js/config.js"></script>
+  <script src="./js/trending.js"></script>
 </body>
 </html>
+

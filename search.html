@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="./css/main.css" />
   <link rel="stylesheet" href="./css/search.css"/>
 </head>
-<body>
+<body data-page="search">
   <div class="top-nav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <div class="nav-left">
@@ -68,6 +68,8 @@
         } else if (target === 'details') {
           // Arahkan ke halaman utama dengan mode details view
           window.location.href = 'index.html?view=details';
+        } else if (target === 'trending') {
+          window.location.href = 'trending.html';
         }
       });
     });
